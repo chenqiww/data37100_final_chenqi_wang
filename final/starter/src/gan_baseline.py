@@ -1,22 +1,5 @@
 #!/usr/bin/env python3
-"""
-DATA 37100 — Final Project Starter (GAN / DCGAN)
 
-A small, fast DCGAN baseline for MNIST / Fashion-MNIST.
-
-Run (from repo root):
-  python final/starter/src/gan_baseline.py --dataset fashionmnist --epochs 1
-
-Controlled experiment (<= 6 runs, exactly 2 knobs):
-  python final/starter/src/gan_baseline.py --dataset mnist --epochs 1 --grid "lr=0.0001,0.0002,0.0004;d_steps=1,2"
-
-Outputs:
-  ./untrack/outputs/final/gan/<run_name>/
-    - run_args.json
-    - train_log.csv
-    - samples/ (PNG grids)
-    - checkpoint.pt
-"""
 
 from __future__ import annotations
 
@@ -25,11 +8,13 @@ import csv
 import itertools
 import json
 import math
+import random
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Tuple
 
+import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
@@ -40,8 +25,24 @@ try:
 except Exception as e:  # pragma: no cover
     raise RuntimeError(
         "torchvision is required for gan_baseline.py. "
-        "Install it in your course environment."
+        "Install a torchvision build that matches your torch build."
     ) from e
+
+
+# -----------------------------
+# Reproducibility
+# -----------------------------
+def seed_all(seed: int) -> None:
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+    try:
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+    except Exception:
+        pass
 
 
 # -----------------------------
@@ -128,7 +129,7 @@ def get_dataset(name: str, data_dir: str, download: bool) -> Tuple[torch.utils.d
         ds = datasets.MNIST(root=str(root), train=True, download=download, transform=tfm)
         return ds, 1
     if name in ["fashion", "fashionmnist", "fmnist"]:
-        root = base / "MNIST"
+        root = base / "FashionMNIST"
         ds = datasets.FashionMNIST(root=str(root), train=True, download=download, transform=tfm)
         return ds, 1
 
@@ -191,11 +192,13 @@ class RunPaths:
     samples_dir: Path
     log_csv: Path
     args_json: Path
+    summary_json: Path
     ckpt: Path
 
 
-def make_run_paths(run_name: str) -> RunPaths:
-    out_base = Path("./untrack/outputs/final/gan")
+
+def make_run_paths(out_dir: str, run_name: str) -> RunPaths:
+    out_base = Path(out_dir).expanduser()
     run_dir = out_base / run_name
     samples_dir = run_dir / "samples"
     samples_dir.mkdir(parents=True, exist_ok=True)
@@ -204,6 +207,7 @@ def make_run_paths(run_name: str) -> RunPaths:
         samples_dir=samples_dir,
         log_csv=run_dir / "train_log.csv",
         args_json=run_dir / "run_args.json",
+        summary_json=run_dir / "summary.json",
         ckpt=run_dir / "checkpoint.pt",
     )
 
@@ -221,20 +225,20 @@ def save_samples(G: nn.Module, device: torch.device, paths: RunPaths, step: int,
 
 
 def run_one(args: argparse.Namespace, overrides: Dict[str, str]) -> Path:
-    device = pick_device(args.device)
-
     # knobs (defaults overridden by grid)
     lr = safe_float(overrides.get("lr", str(args.lr)))
     d_steps = safe_int(overrides.get("d_steps", str(args.d_steps)))
-
     z_dim = safe_int(overrides.get("z_dim", str(args.z_dim)))
     base_ch = safe_int(overrides.get("base_ch", str(args.base_ch)))
 
     run_name = (
         f"ds-{args.dataset}_ep-{args.epochs}_bs-{args.batch_size}_"
-        f"lr-{lr}_dsteps-{d_steps}_z-{z_dim}_ch-{base_ch}"
+        f"lr-{lr}_dsteps-{d_steps}_z-{z_dim}_ch-{base_ch}_seed-{args.seed}"
     )
-    paths = make_run_paths(run_name)
+    paths = make_run_paths(args.out_dir, run_name)
+
+    seed_all(args.seed)
+    device = pick_device(args.device)
 
     # save args
     run_args = vars(args).copy()
@@ -242,7 +246,17 @@ def run_one(args: argparse.Namespace, overrides: Dict[str, str]) -> Path:
     paths.args_json.write_text(json.dumps(run_args, indent=2))
 
     ds, in_ch = get_dataset(args.dataset, args.data_dir, args.download)
-    dl = DataLoader(ds, batch_size=args.batch_size, shuffle=True, drop_last=True, num_workers=0)
+
+    generator = torch.Generator()
+    generator.manual_seed(args.seed)
+    dl = DataLoader(
+        ds,
+        batch_size=args.batch_size,
+        shuffle=True,
+        drop_last=True,
+        num_workers=args.num_workers,
+        generator=generator,
+    )
 
     G = DCGANGenerator(z_dim=z_dim, base_ch=base_ch, out_ch=in_ch).to(device)
     D = DCGANDiscriminator(base_ch=base_ch, in_ch=in_ch).to(device)
@@ -251,19 +265,20 @@ def run_one(args: argparse.Namespace, overrides: Dict[str, str]) -> Path:
     optD = torch.optim.Adam(D.parameters(), lr=lr, betas=(args.beta1, args.beta2))
 
     bce = nn.BCEWithLogitsLoss()
-
     fixed_z = torch.randn(64, z_dim, 1, 1, device=device)
 
     # logging
+    t0 = time.time()
+    final_step = 0
     with open(paths.log_csv, "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(["step", "epoch", "lossD", "lossG", "sec_per_step"])
 
         step = 0
-        t0 = time.time()
         for epoch in range(1, args.epochs + 1):
             for real, _ in dl:
                 step += 1
+                final_step = step
                 if args.max_steps > 0 and step > args.max_steps:
                     break
 
@@ -312,7 +327,13 @@ def run_one(args: argparse.Namespace, overrides: Dict[str, str]) -> Path:
                 # log + sample
                 t1 = time.time()
                 sec_per_step = (t1 - t0) / max(1, step)
-                w.writerow([step, epoch, f"{lossD_avg:.6f}", f"{float(lossG.detach().cpu()):.6f}", f"{sec_per_step:.4f}"])
+                w.writerow([
+                    step,
+                    epoch,
+                    f"{lossD_avg:.6f}",
+                    f"{float(lossG.detach().cpu()):.6f}",
+                    f"{sec_per_step:.4f}",
+                ])
 
                 if step == 1 or (args.sample_every > 0 and step % args.sample_every == 0):
                     G.eval()
@@ -323,10 +344,18 @@ def run_one(args: argparse.Namespace, overrides: Dict[str, str]) -> Path:
                         save_image(img, str(out), nrow=8, normalize=False)
 
                 if args.print_every > 0 and step % args.print_every == 0:
-                    print(f"[GAN] ep {epoch:02d} step {step:05d} | lossD={lossD_avg:.3f} lossG={float(lossG):.3f} | {device}")
+                    print(
+                        f"[GAN] ep {epoch:02d} step {step:05d} | "
+                        f"lossD={lossD_avg:.3f} lossG={float(lossG):.3f} | {device}"
+                    )
 
             if args.max_steps > 0 and step > args.max_steps:
                 break
+
+    # save one final grid too
+    save_samples(G, device, paths, final_step, z_dim=z_dim, n=64)
+
+    dt = time.time() - t0
 
     # checkpoint
     torch.save(
@@ -338,13 +367,30 @@ def run_one(args: argparse.Namespace, overrides: Dict[str, str]) -> Path:
         paths.ckpt,
     )
 
+    summary = {
+        "seconds": round(dt, 2),
+        "device": str(device),
+        "run_dir": str(paths.run_dir),
+        "final_step": final_step,
+        "dataset": args.dataset,
+        "epochs": args.epochs,
+        "batch_size": args.batch_size,
+        "lr": lr,
+        "d_steps": d_steps,
+        "z_dim": z_dim,
+        "base_ch": base_ch,
+        "seed": args.seed,
+    }
+    paths.summary_json.write_text(json.dumps(summary, indent=2))
+
     return paths.run_dir
+
 
 
 def run_grid(args: argparse.Namespace) -> None:
     grid = parse_grid(args.grid)
     combos = iter_grid(grid)
-    out_base = Path("./untrack/outputs/final/gan")
+    out_base = Path(args.out_dir).expanduser()
     out_base.mkdir(parents=True, exist_ok=True)
     results_csv = out_base / "results.csv"
 
@@ -359,9 +405,10 @@ def run_grid(args: argparse.Namespace) -> None:
     print(f"[OK] Wrote grid manifest: {results_csv}")
 
 
+
 def build_argparser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description="DATA 37100 final project DCGAN baseline (fast).")
-    p.add_argument("--dataset", type=str, default="fashionmnist", help="mnist | fashionmnist")
+    p.add_argument("--dataset", type=str, default="mnist", help="mnist | fashionmnist")
     p.add_argument("--data-dir", type=str, default="./data/bigdata", help="Repo data root (contains MNIST/).")
     p.add_argument("--download", action="store_true", help="Download dataset if missing.")
     p.add_argument("--device", type=str, default="auto", help="auto | cpu | cuda | mps")
@@ -369,6 +416,8 @@ def build_argparser() -> argparse.ArgumentParser:
     p.add_argument("--epochs", type=int, default=1)
     p.add_argument("--max-steps", type=int, default=400, help="Hard cap for speed (0 = no cap).")
     p.add_argument("--batch-size", type=int, default=128)
+    p.add_argument("--num-workers", type=int, default=0)
+    p.add_argument("--seed", type=int, default=42)
 
     p.add_argument("--lr", type=float, default=2e-4)
     p.add_argument("--beta1", type=float, default=0.5)
@@ -381,9 +430,11 @@ def build_argparser() -> argparse.ArgumentParser:
 
     p.add_argument("--sample-every", type=int, default=100)
     p.add_argument("--print-every", type=int, default=100)
+    p.add_argument("--out-dir", type=str, default="./untrack/outputs/final/gan")
 
     p.add_argument("--grid", type=str, default="", help='Two-knob grid: "k1=v1,v2; k2=v1,v2"')
     return p
+
 
 
 def main() -> int:
