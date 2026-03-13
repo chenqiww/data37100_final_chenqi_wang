@@ -1,0 +1,27 @@
+# Core scientific stack
+numpy==2.1.1
+pandas==2.2.2
+matplotlib==3.9.2
+scikit-learn==1.5.2
+
+# Deep learning (CPU-compatible by default; MPS/CUDA supported where available)
+torch==2.4.1
+torchvision==0.19.1
+torchaudio==2.4.1
+
+# Jupyter & interactive tools
+jupyter==1.1.1
+notebook==7.2.2
+ipython==8.28.0
+ipywidgets==8.1.2
+
+# Optional but useful
+seaborn==0.13.2
+tqdm==4.66.5
+
+# Web scraping toolkit
+selenium==4.25.0
+webdriver-manager==4.0.2
+beautifulsoup4==4.12.3
+requests==2.32.3
+html5lib==1.1

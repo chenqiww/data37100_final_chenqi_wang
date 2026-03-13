@@ -1,0 +1,12 @@
+{
+  "T": 400,
+  "base_ch": 64,
+  "beta2": 0.02,
+  "device": "cpu",
+  "epochs": 1,
+  "final_step": 468,
+  "run_name": "ds-mnist_T-400_target-eps_b2-0.02_ch-64",
+  "seconds": 95.48,
+  "target": "eps",
+  "time_emb_dim": 128
+}

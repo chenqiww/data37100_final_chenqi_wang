@@ -1,0 +1,14 @@
+{
+  "seconds": 45.28,
+  "device": "cpu",
+  "run_dir": "untrack\\outputs\\final\\gan\\ds-mnist_ep-1_bs-128_lr-0.0002_dsteps-1_z-128_ch-64_seed-42",
+  "final_step": 401,
+  "dataset": "mnist",
+  "epochs": 1,
+  "batch_size": 128,
+  "lr": 0.0002,
+  "d_steps": 1,
+  "z_dim": 128,
+  "base_ch": 64,
+  "seed": 42
+}

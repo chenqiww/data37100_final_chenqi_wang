@@ -1,0 +1,22 @@
+{
+  "dataset": "mnist",
+  "data_dir": "./data/bigdata",
+  "download": true,
+  "device": "auto",
+  "epochs": 1,
+  "max_steps": 400,
+  "batch_size": 128,
+  "num_workers": 0,
+  "seed": 42,
+  "lr": 0.0002,
+  "beta1": 0.5,
+  "beta2": 0.999,
+  "d_steps": 1,
+  "label_smooth": 0.0,
+  "z_dim": 128,
+  "base_ch": 64,
+  "sample_every": 100,
+  "print_every": 100,
+  "out_dir": "./untrack/outputs/final/gan",
+  "grid": ""
+}

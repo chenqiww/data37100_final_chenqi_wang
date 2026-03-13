@@ -1,0 +1,12 @@
+{
+  "T": 100,
+  "base_ch": 64,
+  "beta2": 0.02,
+  "device": "cpu",
+  "epochs": 1,
+  "final_step": 468,
+  "run_name": "ds-mnist_T-100_target-x0_b2-0.02_ch-64",
+  "seconds": 88.12,
+  "target": "x0",
+  "time_emb_dim": 128
+}
