@@ -33,7 +33,10 @@ def find_pngs(run_dir: Path) -> List[Path]:
         candidates += sorted((run_dir / "samples").glob("*.png"))
     candidates += sorted(run_dir.glob("*.png"))
     # prioritize "grid" or "sample" names, then latest modified
-    candidates = sorted(candidates, key=lambda p: (("grid" not in p.name.lower() and "sample" not in p.name.lower()), p.stat().st_mtime))
+    candidates = sorted(
+        candidates,
+        key=lambda p: (("grid" not in p.name.lower() and "sample" not in p.name.lower()), -p.stat().st_mtime),
+    )
     return candidates
 
 
