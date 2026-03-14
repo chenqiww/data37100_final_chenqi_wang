@@ -65,4 +65,3 @@ Qualitative inspection:
 
 ---
 
-**Instructor approval required before proceeding.**
