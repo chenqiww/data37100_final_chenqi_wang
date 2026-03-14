@@ -149,4 +149,4 @@ All runs use `seed=42`. Both `diffusion_baseline.py` and `gan_baseline.py` set:
 - `random.seed`
 - `np.random.seed`
 
-ai acknoledge: use chatgpt for some debuging, manage the code readbility and check and fix garmmar.
+ai acknoledge: use chatgpt for some debuging, manage the code and readbility and make markdown looks better, and check and fix garmmar.
