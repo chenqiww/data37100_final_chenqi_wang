@@ -1,7 +1,6 @@
 # DATA 37100 — Final Project: Diffusion Parameterization & Capacity on MNIST
 
-**Author:** Chenqi Wang  
-**Course:** DATA 37100 — Winter 2026  
+Chenqi Wang  
 
 ---
 
