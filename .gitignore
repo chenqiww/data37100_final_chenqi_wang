@@ -1,0 +1,16 @@
+# Large checkpoint files
+*.pt
+
+# Downloaded datasets
+data/
+
+# Python
+__pycache__/
+*.pyc
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
