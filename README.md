@@ -148,3 +148,5 @@ All runs use `seed=42`. Both `diffusion_baseline.py` and `gan_baseline.py` set:
 - `torch.cuda.manual_seed_all`
 - `random.seed`
 - `np.random.seed`
+
+ai acknoledge: use chatgpt for some debuging, manage the code readbility and check and fix garmmar.
