@@ -19,8 +19,8 @@ In this project, I study how two design choices affect diffusion model performan
 
 ### Models used
 
-- **Diffusion (DDPM-lite U-Net):** primary model family for the controlled experiment.
-- **DCGAN:** secondary baseline to show a different generative paradigm under the same short-training budget.
+- **Diffusion:** primary model family for the controlled experiment.
+- **GAN:** secondary baseline to show a different generative paradigm under the same short-training budget.
 
 ### Dataset and fixed settings
 
