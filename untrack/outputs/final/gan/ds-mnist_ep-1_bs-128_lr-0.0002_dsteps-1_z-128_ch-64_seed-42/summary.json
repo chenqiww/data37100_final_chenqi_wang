@@ -1,5 +1,5 @@
 {
-  "seconds": 45.28,
+  "seconds": 42.26,
   "device": "cpu",
   "run_dir": "untrack\\outputs\\final\\gan\\ds-mnist_ep-1_bs-128_lr-0.0002_dsteps-1_z-128_ch-64_seed-42",
   "final_step": 401,

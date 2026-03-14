@@ -1,7 +1,7 @@
 {
   "dataset": "mnist",
   "data_dir": "./data/bigdata",
-  "download": true,
+  "download": false,
   "device": "auto",
   "epochs": 1,
   "max_steps": 400,

@@ -6,7 +6,7 @@
   "epochs": 1,
   "final_step": 468,
   "run_name": "ds-mnist_T-200_target-x0_b2-0.02_ch-32",
-  "seconds": 37.92,
+  "seconds": 38.05,
   "target": "x0",
   "time_emb_dim": 128
 }

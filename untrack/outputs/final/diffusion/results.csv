@@ -1,7 +1,7 @@
-run_dir,T,base_ch
-untrack\outputs\final\diffusion\ds-mnist_T-100_target-eps_b2-0.02_ch-32,100,32
-untrack\outputs\final\diffusion\ds-mnist_T-100_target-eps_b2-0.02_ch-64,100,64
-untrack\outputs\final\diffusion\ds-mnist_T-200_target-eps_b2-0.02_ch-32,200,32
-untrack\outputs\final\diffusion\ds-mnist_T-200_target-eps_b2-0.02_ch-64,200,64
-untrack\outputs\final\diffusion\ds-mnist_T-400_target-eps_b2-0.02_ch-32,400,32
-untrack\outputs\final\diffusion\ds-mnist_T-400_target-eps_b2-0.02_ch-64,400,64
+run_dir,target,base_ch
+untrack\outputs\final\diffusion\ds-mnist_T-200_target-eps_b2-0.02_ch-32,eps,32
+untrack\outputs\final\diffusion\ds-mnist_T-200_target-eps_b2-0.02_ch-64,eps,64
+untrack\outputs\final\diffusion\ds-mnist_T-200_target-eps_b2-0.02_ch-128,eps,128
+untrack\outputs\final\diffusion\ds-mnist_T-200_target-x0_b2-0.02_ch-32,x0,32
+untrack\outputs\final\diffusion\ds-mnist_T-200_target-x0_b2-0.02_ch-64,x0,64
+untrack\outputs\final\diffusion\ds-mnist_T-200_target-x0_b2-0.02_ch-128,x0,128

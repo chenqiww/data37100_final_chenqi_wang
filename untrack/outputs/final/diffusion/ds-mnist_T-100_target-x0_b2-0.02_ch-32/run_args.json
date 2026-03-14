@@ -1,0 +1,23 @@
+{
+  "T": 100,
+  "base_ch": 32,
+  "beta1": 0.0001,
+  "beta2": 0.02,
+  "bs": 128,
+  "data_dir": "./data/bigdata",
+  "dataset": "mnist",
+  "device": "auto",
+  "download": true,
+  "epochs": 1,
+  "grid": "",
+  "lr": 0.0002,
+  "max_runs": 6,
+  "num_workers": 0,
+  "out_dir": "./untrack/outputs/final/diffusion",
+  "sample_every": 400,
+  "sample_n": 64,
+  "save_every": 400,
+  "seed": 42,
+  "target": "x0",
+  "time_emb_dim": 128
+}
